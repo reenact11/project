@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.Team_GuestMatchMapper">
+
+
+	<insert id="write">
+		insert into POST (postno, userno, category,
+		posttitle, postcontent, readcnt, recruitstate,
+		postdate)values(seq_post_postno.nextval,#{userno},#{category},#{posttitle},#{postcontent},0,'O',sysdate)
+	</insert>
+
+	<select id="readcnt">
+		update post set readcnt = readcnt+1 where
+		postno=#{postno}
+	</select>
+
+	<select id="read" resultType="org.SOC.dto.MatchDTO">
+		select * from post where postno
+		=#{postno}
+	</select>
+
+	<update id="update">
+		update post set posttitle =#{posttitle},
+		postcontent
+		=#{postcontent}
+		where postno = #{postno}
+	</update>
+
+	<delete id="delete">
+		delete from post where postno = #{postno}
+	</delete>
+
+	<select id="listCriteria" resultType="org.SOC.dto.MatchDTO">
+ <![CDATA[
+ select B.* from (select rownum as rnum, A.* from (select P.*, T.teamno, T.teamname , T.teamlogo from post P , userteam UT, teaminfo T where P.userno = UT.userno and UT.teamno = T.teamno and category = #{category} order by postdate desc ) A
+where rownum <= (#{perPageNum} * #{page})) B where B.rnum > #{pageStart}
+ ]]>
+	</select>
+
+	<select id="countPaging" resultType="int">
+ <![CDATA[
+ select count(postno) from post where postno > 0 and category = #{category}
+ ]]>
+	</select>
+
+	<insert id="formsend">
+		insert into form(formno , postno , userno ,
+		formcontent)
+		values(seq_form_formno.nextval,#{postno},#{userno},#{formcontent})
+	</insert>
+
+	<update id="formcount">
+		update post set readcnt=readcnt+1 where
+		postno=#{postno}
+	</update>
+
+	<delete id="otherdelete">
+		delete form where formno in(select formno from form
+		where postno=#{postno} and not formno=#{formno})
+	</delete>
+
+	<update id="recruitmodify">	<!--모집상태 바꾸기 -->
+		update post set recruitstate='X' where postno = #{postno}
+	</update>
+
+	<delete id="formdelete">
+		delete from form where formno=#{formno}
+	</delete>
+
+	<insert id="fromttot">
+		insert into teamreview(treviewno, formno, teamno,
+		treview, teambpm, reviewdate)
+		values(seq_teamreview_treviewno.nextval,#{formno},#{teamno},#{treview},#{teambpm},sysdate)
+	</insert>
+
+	<update id="acheck">
+		update form set acheck='O' where formno=#{formno}
+	</update>
+
+	<insert id="fromutot">
+		insert into teamreview(treviewno, formno, teamno,
+		treview, teambpm, reviewdate)
+		values(seq_teamreview_treviewno.nextval,#{formno},#{teamno},#{treview},#{teambpm},sysdate)
+	</insert>
+
+	<update id="bcheck">
+		update form set bcheck='O' where formno=#{formno}
+	</update>
+
+	<insert id="fromttou">
+		insert into userreview(ureviewno, formno, userno,
+		ureview, userbpm, reviewdate)
+		values(seq_userreview_ureviewno.nextval,#{formno},#{userno},#{ureview},#{userbpm},sysdate)
+	</insert>
+
+
+
+
+
+</mapper>

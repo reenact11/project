@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.UserMapper">
+
+	<select id="login" resultType="org.SOC.domain.UserVO">
+
+		select userno,userid, userpw, usernname, userrole , userlock from
+		userinfo where userid = #{userid} and userpw = #{userpw}
+
+	</select>
+	
+	<select id="rolecheck" resultType="org.SOC.domain.UserVO">
+
+		select userno , userid , userpw , usernname , userrole , userlock from
+		userinfo where userno = #{userno}
+
+	</select>
+
+	<insert id="register">
+		insert into userinfo (userno , userid , userpw , username , usernname ,
+		useremail , userage , usergender , usertel , userloc , userposition ,
+		userintro , userdate)
+		values(seq_userinfo_userno.nextval,#{userid},#{userpw},#{username},#{usernname},#{useremail},#{userage},#{usergender},#{usertel},
+		#{userloc},#{userposition},#{userintro},sysdate)
+
+	</insert>
+	
+	<select id="idcheck" resultType="int">
+		select count(*) from userinfo where userid=#{userid}
+	</select>
+	
+	<select id="nnamecheck" resultType="int">
+		select count(*) from userinfo where usernname=#{usernname}
+	</select>
+
+	<update id="keepLogin">
+		update userinfo set sessionKey = #{sessionId},
+		sessionLimit = #{next} where userid = #{userid}
+	</update>
+
+	<select id="checkUserWithSessionKey" resultType="org.SOC.domain.UserVO">
+		select * from
+		userinfo where sessionKey = #{value} and sessionLimit > sysdate
+	</select>
+	
+	<select id="mypage" resultType="org.SOC.dto.Mypage">
+	select userid , username , usernname , useremail , userage , usergender , usertel , userloc , userposition , userintro , userdate from
+	userinfo where userno = #{userno}
+	</select>
+	
+	<update id="mymodify">
+		update userinfo set username = #{username} , usernname=#{usernname} , useremail=#{useremail} , userage=#{userage} , usergender=#{usergender} , usertel=#{usertel} , userloc=#{userloc} , userposition=#{userposition} , userintro=#{userintro} where userid = #{userid}
+	</update>
+
+	<delete id="mydelete">
+		delete userinfo where userno=#{userno}
+	</delete>
+	
+	<update id="allrolemod">
+		update userinfo set userrole='무소속' where userno in(select userno from userteam where teamno in(select teamno from userteam where userno=#{userno}))
+	</update>
+	
+	<select id="userinfo" resultType="org.SOC.dto.UserInfo">
+		select userno , usernname , userage , usergender , userloc , userposition , userintro from userinfo where usernname = #{usernname}
+	</select>
+	
+	<update id="leadermake">
+		update userinfo set userrole='팀장' where userno in(select userno from userteam where teamno=#{teamno})
+	</update>
+	
+	<update id="nonemake">
+		update userinfo set userrole='무소속' where userno=#{userno}
+	</update>
+	
+	<update id="leaderchange">
+		update userinfo set userrole='팀장' where usernname=#{usernname}
+	</update>
+	
+	<update id="memberchange">
+		update userinfo set userrole='팀원' where userno=#{userno}
+	</update>
+	
+	<select id="myformlist" resultType="org.SOC.dto.MyFormList">
+		select p.postno, p.userno as postuser, p.category, p.posttitle, f.formno,f.userno, p.recruitstate, f.bcheck from post p, form f
+		where f.userno = #{userno} and p.postno = f.postno order by f.formno desc
+	</select>
+	
+	<select id="ureviewlist" resultType="org.SOC.dto.UReview">
+		select userbpm , ureview , reviewdate from userreview where userno=#{userno} order by reviewdate desc
+	</select>
+	
+	<select id="useravg" resultType="int">
+		select avg(userbpm) as avgbpm from userreview where userno=#{userno}
+	</select>
+	
+	<select id="reviewcheck" resultType="int">
+		select count(*) from userreview where userno=#{userno}
+	</select>
+</mapper>

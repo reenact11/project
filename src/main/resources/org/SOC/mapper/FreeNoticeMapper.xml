@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.FreeNoticeMapper">
+
+
+	<insert id="write">
+		insert into POST (postno, userno, category,
+		posttitle, postcontent, readcnt, recruitstate,
+		postdate)values(seq_post_postno.nextval,#{userno},#{category},#{posttitle},#{postcontent},0,'O',sysdate)
+
+	</insert>
+
+	<select id="readcnt">
+		update post set readcnt = readcnt+1 where
+		postno=#{postno}
+	</select>
+
+	<select id="read" resultType="BoardVO">
+		select * from post where postno
+		=#{postno}
+	</select>
+
+	<update id="update">
+		update post set posttitle =#{posttitle}, postcontent
+		=#{postcontent}
+		where postno = #{postno}
+	</update>
+
+	<delete id="delete">
+		delete from post where postno = #{postno}
+	</delete>
+
+	<select id="listCriteria" resultType="BoardVO">
+ <![CDATA[
+ select B.* from (select rownum as rnum, A.*
+ from (select P.* from post P where category = #{category} order by postdate desc ) A
+where rownum <= (#{perPageNum} * #{page})) B where B.rnum > #{pageStart}
+ ]]>
+	</select>
+
+	<select id="countPaging" resultType="int">
+ <![CDATA[
+ select count(*) from post where postno > 0 and category = #{category}
+ ]]>
+ 
+	</select>
+
+	<select id="listSearchCriteria" resultType="BoardVO">
+ <![CDATA[
+ select B.* from (select rownum as rnum, A.* from (select P.* from post P where category = #{category} 
+ ]]>
+
+		<include refid="search"></include>
+  
+<![CDATA[    
+  order by postdate desc ) A where rownum <= ( #{perPageNum} * #{page} )) B where B.rnum > #{pageStart}
+]]>
+	</select>
+
+	<select id="listSearchcount" resultType="int">
+<![CDATA[  
+  select count(postno) from post where postno > 0 and category=#{category}
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+<sql id="search">
+		<if test="keyword != null">
+				and ( posttitle like ('%${keyword}%') OR postcontent like ('%${keyword}%'))
+		
+		</if>
+	</sql>
+
+	<update id="updateCommcnt">
+		update post set commcnt = commcnt + #{amount} where
+		postno = #{postno}
+	</update>
+
+	<insert id="addAttach">
+		insert into attach(fullname, postno) values
+		(#{fullName}, (select postno from (select * from post order by postdate desc)team where rownum=1))
+	</insert>
+
+
+	<select id="getAttach" resultType="String">
+		select fullname from attach
+		where postno = #{postno} order by regdate
+	</select>
+
+
+	<delete id="deleteAttach">
+		delete from attach where postno = #{postno}
+	</delete>
+
+	<insert id="replaceAttach">
+		insert into attach(fullname, postno) values
+		(#{fullName}, #{postno})
+	</insert>
+
+
+</mapper>

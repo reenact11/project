@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.AdminMapper">
+
+	<select id="Userlist" resultType="org.SOC.dto.UserList">
+		select userno , usernname , username , useremail , userlock , userdate 
+		from userinfo where not userno=#{userno} order by userdate desc
+	</select>
+	
+	<update id="lockchange">
+		update userinfo set userlock=#{userlock} where userno=#{userno}
+	</update>
+	
+	<delete id="userdelete">
+		delete userinfo where userno=#{userno}
+	</delete>
+	
+	<select id="Teamlist" resultType="org.SOC.dto.TeamList">
+		select teamno , teamname , teamloc , teamdate
+		from teaminfo order by teamdate desc
+	</select>
+	
+	<update id="memberrole">
+		update userinfo set userrole='무소속' where userno in(select userno from userteam where teamno=#{teamno})
+	</update>
+	
+	<delete id="teamdelete">
+		delete teaminfo where teamno=#{teamno}
+	</delete>
+</mapper>

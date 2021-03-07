@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.PwChangeMapper">
+
+	<select id="searchid" resultType="int">
+		select count(*) from userinfo where userid=#{userid} and useremail=#{useremail}
+	</select>
+	
+	<update id="pwchange">
+		update userinfo set userpw=#{userpw} where useremail=#{useremail}
+	</update>
+</mapper>

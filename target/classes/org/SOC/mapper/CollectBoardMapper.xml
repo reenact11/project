@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.CollectBoardMapper">
+
+
+	<insert id="write">
+		insert into POST (postno, userno, category,
+		posttitle, postcontent, readcnt, recruitstate,
+		postdate)values(seq_post_postno.nextval,#{userno},#{category},#{posttitle},#{postcontent},0,'O',sysdate)
+
+	</insert>
+
+	<select id="readcnt">
+		update post set readcnt = readcnt+1 where
+		postno=#{postno}
+	</select>
+
+	<select id="read" resultType="org.SOC.dto.CollectDTO">
+		select * from post where postno =
+		#{postno}
+	</select>
+
+	<update id="update">
+		update post set posttitle =#{posttitle}, postcontent
+		=#{postcontent}
+		where postno = #{postno}
+	</update>
+
+	<delete id="delete">
+		delete from post where postno = #{postno}
+	</delete>
+
+	<select id="listCriteria" resultType="org.SOC.dto.CollectDTO">
+ <![CDATA[
+ select B.* from (select rownum as rnum, A.* from (select P.*, T.teamno, T.teamname ,T.teamlogo from post P , userteam UT, teaminfo T where P.userno = UT.userno and UT.teamno = T.teamno and category = #{category} order by postdate desc ) A
+where rownum <= (#{perPageNum} * #{page})) B where B.rnum > #{pageStart}
+ ]]>
+	</select>
+
+	<select id="countPaging" resultType="int">
+ <![CDATA[
+ select count(postno) from post where postno > 0 and category = #{category}
+ ]]>
+	</select>
+
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 't'.toString()">
+				and posttitle like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'c'.toString()">
+				and postcontent like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'w'.toString()">
+				and usernname like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'tc'.toString()">
+				and ( posttitle like CONCAT('%', #{keyword}, '%') OR
+				postcontent
+				like
+				CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="searchType == 'cw'.toString()">
+				and ( postcontent like CONCAT('%', #{keyword}, '%') OR
+				usernname
+				like
+				CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="searchType == 'tcw'.toString()">
+				and ( posttitle like CONCAT('%', #{keyword}, '%')
+				OR
+				postcontent
+				like CONCAT('%', #{keyword}, '%')
+				OR
+				usernname like
+				CONCAT('%',
+				#{keyword}, '%'))
+			</if>
+		</if>
+	</sql>
+
+	<select id="listSearch" resultType="org.SOC.dto.CollectDTO">
+<![CDATA[  
+  select p.* from post p where postno > 0 
+]]>
+
+		<!-- <include refid="search"></include> -->
+  
+<![CDATA[    
+  order by postno desc limit #{pageStart}, #{perPageNum}
+]]>
+	</select>
+
+	<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(postno) from post where postno > 0 
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+	<update id="updatecommCnt">
+		update post set commcnt = commcnt + #{amount} where
+		postno = #{postno}
+	</update>
+
+	<insert id="addAttach">
+		insert into attach(fullname, postno) values
+		(#{fullName}, LAST_INSERT_ID())
+	</insert>
+
+
+	<select id="getAttach" resultType="string">
+		select fullname from attach
+		where postno = #{postno} order by postdate
+	</select>
+
+
+	<delete id="deleteAttach">
+		delete from attach where postno = #{postno}
+	</delete>
+
+	<insert id="replaceAttach">
+		insert into attach(fullname, postno) values
+		(#{fullName}, #{postno})
+	</insert>
+
+	<insert id="formsend">
+		insert into form(formno , postno , userno ,
+		formcontent)
+		values(seq_form_formno.nextval,#{postno},#{userno},#{formcontent})
+	</insert>
+
+	<update id="formcount">
+		update post set readcnt=readcnt+1 where
+		postno=#{postno}
+	</update>
+
+	<insert id="memberjoin">
+		insert into userteam values((select teamno from
+		userteam where userno=#{postuser}),#{userno})
+	</insert>
+
+	<update id="memberrole">
+		update userinfo set userrole='팀원' where
+		userno=#{userno}
+	</update>
+
+	<delete id="formdelete">
+		delete form where formno=#{formno}
+	</delete>
+
+	<delete id="formalldelete">
+		delete from form where formno in(select formno from
+		form where userno=#{userno}
+		and postno in(select postno from post where
+		not category='PlusGuest' and not category='VSTeam'))
+	</delete>
+
+
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.TeamMapper">
+
+	<insert id="maketeam">
+
+		insert into teaminfo values(seq_teaminfo_teamno.nextval,#{teamname},#{teamintro},#{teamloc},sysdate,#{teamlogo, jdbcType=VARCHAR})
+
+	</insert>
+	
+	<select id="beforemake" resultType="int">
+		select teamno from (select * from teaminfo order by teamdate desc)team where rownum=1 and teamname=#{teamname}
+
+	</select>
+	
+	<select id="beforesearch" resultType="int">
+	select count(*) from userteam where userno=#{userno}
+	</select>
+	
+	<select id="search" resultType="int">
+	select teamno from userteam where userno=#{userno}
+	</select>
+	
+	<select id="memsearch" resultType="int">
+	select count(*) from userteam where teamno=#{teamno}
+	</select>
+
+	<select id="teaminfo" resultType="org.SOC.domain.TeamVO">
+	select * from teaminfo where teamno=#{teamno}
+	</select>
+	
+	<select id="teamnosearch" resultType="int">
+	select teamno from teaminfo where teamname=#{teamname}
+	</select>
+	
+	<select id="teampage" resultType="org.SOC.dto.TeamPage">
+	select teamno,teamname , teamintro , teamloc , teamdate,teamlogo,(select count(*) from userteam where teamno=#{teamno}) teamcount from teaminfo where teamno=#{teamno}
+	</select>
+	
+	<select id="teammember" resultType="org.SOC.dto.Teammember">
+	select u.usernname, u.userposition, u.userage, u.userloc, u.userrole from userinfo u natural join userteam t where teamno=#{teamno}
+	</select>
+
+	<insert id="userteam" parameterType="int">
+	insert into userteam (teamno,userno) values(#{teamno},#{userno})
+	</insert>
+	
+	<update id="teammodify">
+	update teaminfo set teamname=#{teamname} , teamloc=#{teamloc} , teamintro=#{teamintro} , teamlogo=#{teamlogo, jdbcType=VARCHAR} where teamno=#{teamno}
+	</update>
+	
+	<delete id="teamquit">
+	delete userteam where userno=#{userno}
+	</delete>
+	
+	<delete id="teamdelete">
+	delete teaminfo where teamno=#{teamno}
+	</delete>
+	
+	<delete id="allmemdel">
+	delete teaminfo where teamno in(select teamno from userteam where userno=#{userno})
+	</delete>
+	
+	<select id="formlist" resultType="org.SOC.dto.FormList">
+		select f.userno as userno, p.userno as postuser, p.category, f.formcontent, u.usernname, f.formno, p.recruitstate, p.postno, f.acheck,
+		f.bcheck from post p, userinfo u, form f where (p.userno=#{userno} and u.userno = f.userno and f.postno = p.postno) order by f.formno desc
+	</select>
+	
+	<select id="treviewlist" resultType="org.SOC.dto.TReview">
+		 select teambpm , treview , reviewdate from teamreview where teamno=#{teamno} order by reviewdate desc
+	</select>
+	
+	<select id="teamavg" resultType="int">
+		select avg(teambpm) from teamreview where teamno=#{teamno}
+	</select>
+	
+	<select id="reviewcheck" resultType="int">
+		select count(*) from teamreview where teamno=#{teamno}
+	</select>
+	
+	<select id="getAttach" resultType="String">
+		select teamlogo from teaminfo where teamno = #{teamno}
+	</select>
+</mapper>
+
+

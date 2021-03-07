@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.SOC.mapper.CommMapper">
+
+	<select id="list" resultType="CommVO">
+		select * from comm where postno =
+		#{postno} order by commdate desc
+	</select>
+
+	<insert id="create">
+		insert into comm (commno , postno, commcontent, userno)
+		values(seq_comm_commno.nextval,#{postno}, #{commcontent}, #{userno})
+	</insert>
+
+	<update id="update">
+		update comm set commcontent = #{commcontent} where
+		commno = #{commno}
+	</update>
+
+	<delete id="delete">
+		delete from comm where commno = #{commno}
+	</delete>
+
+	<select id="listPage" resultType="org.SOC.dto.CommDTO" parameterType="map">
+	 <![CDATA[
+	select B.* from (select rownum as rnum, A.* from 
+(select C.commno , U.usernname , U.userno , C.postno , C.commcontent , C.commdate from comm c , userinfo u where c.userno = u.userno 
+and postno=#{postno} order by c.commdate desc) A where rownum <=(#{cri.perPageNum} * #{cri.page})) B where B.rnum > #{cri.pageStart}
+	]]>
+	</select>
+
+	<select id="count" resultType="int">
+		select count(postno) from comm where postno=#{postno}
+	</select>
+</mapper>
